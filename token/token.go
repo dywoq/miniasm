@@ -64,6 +64,10 @@ var (
 	}
 )
 
+func New(lit string, kind Kind, pos *Position) *Token {
+	return &Token{lit, pos, kind}
+}
+
 // IsIdentifier checks whether str is a valid identifier:
 //   - Must not start with digit;
 //   - Must not contain any special symbols except _;
