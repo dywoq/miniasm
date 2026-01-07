@@ -31,6 +31,7 @@ func (d *Default) Append(a Appender) {
 	a.AppendTokenizer(d.Number)
 	a.AppendTokenizer(d.Separator)
 	a.AppendTokenizer(d.String)
+	a.AppendTokenizer(d.Char)
 }
 
 func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
@@ -124,7 +125,7 @@ func (d *Default) String(c Context) (*token.Token, bool, error) {
 		cur := c.Current()
 		if c.Eof() {
 			c.DebugPrintln("String(): Unexpected EOF")
-			return nil, false, c.NewError("String(): Unexpected EOF when tokenizing string")
+			return nil, false, c.NewError("String(): Found EOF when tokenizing string, expected closing \"")
 		}
 		if cur == '"' {
 			break
@@ -138,4 +139,32 @@ func (d *Default) String(c Context) (*token.Token, bool, error) {
 	}
 	c.DebugPrintf("String(): %v is a string\n", str)
 	return token.New(str, token.String, c.Position()), false, nil
+}
+
+func (d *Default) Char(c Context) (*token.Token, bool, error) {
+	c.DebugPrintln("Char(): Met a possible char")
+	cur := c.Current()
+	if cur == 0 || cur != '`' {
+		c.DebugPrintln("Char(): No match")
+		return nil, true, nil
+	}
+
+	c.Advance()
+
+	char := c.Current()
+	if !unicode.IsLetter(rune(char)) {
+		c.DebugPrintln("Char(): Expected letter")
+		return nil, false, c.NewError("Char(): Expected letter")
+	}
+
+	c.Advance()
+
+	if cur := c.Current(); cur != '`' || c.Eof() {
+		c.DebugPrintln("Char(): Unexpected EOF")
+		return nil, false, c.NewError("Char(): Found EOF when tokenizing character, expected closing `")
+	}
+
+	c.Advance()
+
+	return token.New(string(char), token.Char, c.Position()), false, nil
 }
