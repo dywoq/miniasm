@@ -62,6 +62,9 @@ type Context interface {
 	// Position returns the current position in the file.
 	Position() *token.Position
 
+	// NewError creates a new error, which automatically has location of the error.
+	NewError(str string) error
+
 	Debugging
 }
 

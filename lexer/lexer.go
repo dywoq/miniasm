@@ -260,6 +260,10 @@ func (c *context) DebugPrintln(a ...any) {
 	}
 }
 
+func (c *context) NewError(str string) error {
+	return c.l.makeError(str)
+}
+
 // Do starts lexer and runs tokenizers, printing debug messages
 // if debug mode is on.
 //

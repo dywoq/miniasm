@@ -30,6 +30,7 @@ func (d *Default) Append(a Appender) {
 	a.AppendTokenizer(d.Identifier)
 	a.AppendTokenizer(d.Number)
 	a.AppendTokenizer(d.Separator)
+	a.AppendTokenizer(d.String)
 }
 
 func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
@@ -106,4 +107,35 @@ func (d *Default) Separator(c Context) (*token.Token, bool, error) {
 	c.DebugPrintf("Separator(): %v is separator\n", cur)
 	c.Advance()
 	return token.New(string(cur), token.Separator, c.Position()), false, nil
+}
+
+func (d *Default) String(c Context) (*token.Token, bool, error) {
+	c.DebugPrintln("String(): Met a possible string")
+	cur := c.Current()
+	if cur == 0 || cur != '"' {
+		c.DebugPrintln("String(): No match")
+		return nil, true, nil
+	}
+
+	c.Advance() // consume opening quote
+	start := c.Position().Position
+	for {
+		c.Advance()
+		cur := c.Current()
+		if c.Eof() {
+			c.DebugPrintln("String(): Unexpected EOF")
+			return nil, false, c.NewError("String(): Unexpected EOF when tokenizing string")
+		}
+		if cur == '"' {
+			break
+		}
+	}
+	end := c.Position().Position
+	c.Advance() // consume closing quote
+	str, err := c.Slice(start, end)
+	if err != nil {
+		return nil, false, err
+	}
+	c.DebugPrintf("String(): %v is a string\n", str)
+	return token.New(str, token.String, c.Position()), false, nil
 }
