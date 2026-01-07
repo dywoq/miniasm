@@ -20,6 +20,7 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+	"unicode"
 
 	"github.com/dywoq/miniasm/lexer/tokenizer"
 	"github.com/dywoq/miniasm/token"
@@ -163,11 +164,12 @@ func (c *context) Sof() bool {
 }
 
 func (c *context) Current() byte {
-	c.DebugPrintln("Current(): Getting current character")
 	if c.Eof() {
 		return 0
 	}
-	return c.l.bytes[c.l.position.Position]
+	b := c.l.bytes[c.l.position.Position]
+	c.DebugPrintf("Current(): Getting current character: %v\n", string(b))
+	return b
 }
 
 func (c *context) Advance() {
@@ -302,6 +304,7 @@ func (l *Lexer) makeError(err string) error {
 
 func (l *Lexer) tokenize(c *context) (*token.Token, error) {
 	for _, tokenizer := range l.tokenizers {
+		l.skipWhitespace(c)
 		c.DebugPrintln("Trying to tokenize...")
 		tok, noMatch, err := tokenizer(c)
 		if err != nil {
@@ -316,4 +319,10 @@ func (l *Lexer) tokenize(c *context) (*token.Token, error) {
 		return tok, err
 	}
 	return nil, l.makeError("Unknown character")
+}
+
+func (l *Lexer) skipWhitespace(c *context) {
+	if cur := c.Current(); cur != 0 && unicode.IsSpace(rune(cur)) {
+		c.Advance()
+	}
 }
