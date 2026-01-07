@@ -322,7 +322,7 @@ func (l *Lexer) tokenize(c *context) (*token.Token, error) {
 }
 
 func (l *Lexer) skipWhitespace(c *context) {
-	if cur := c.Current(); cur != 0 && unicode.IsSpace(rune(cur)) {
+	for cur := c.Current(); cur != 0 && unicode.IsSpace(rune(cur)); cur = c.Current() {
 		c.Advance()
 	}
 }

@@ -15,6 +15,7 @@
 package tokenizer
 
 import (
+	"slices"
 	"unicode"
 
 	"github.com/dywoq/miniasm/token"
@@ -28,6 +29,7 @@ type Default struct {
 func (d *Default) Append(a Appender) {
 	a.AppendTokenizer(d.Identifier)
 	a.AppendTokenizer(d.Number)
+	a.AppendTokenizer(d.Separator)
 }
 
 func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
@@ -75,7 +77,7 @@ func (d *Default) Number(c Context) (*token.Token, bool, error) {
 		c.DebugPrintln("Number(): No match")
 		return nil, true, nil
 	}
-	
+
 	start := c.Position().Position
 	for {
 		cur := c.Current()
@@ -85,11 +87,23 @@ func (d *Default) Number(c Context) (*token.Token, bool, error) {
 		c.Advance()
 	}
 	end := c.Position().Position
-	
+
 	str, err := c.Slice(start, end)
 	if err != nil {
 		return nil, false, err
 	}
 	c.DebugPrintf("Number(): %v is number\n", str)
 	return token.New(str, token.Number, c.Position()), false, nil
+}
+
+func (d *Default) Separator(c Context) (*token.Token, bool, error) {
+	c.DebugPrintln("Separator(): Met a possible separator")
+	cur := c.Current()
+	if cur == 0 || !slices.Contains(token.Separators, string(cur)) {
+		c.DebugPrintln("Separator(): No match")
+		return nil, true, nil
+	}
+	c.DebugPrintf("Separator(): %v is separator\n", cur)
+	c.Advance()
+	return token.New(string(cur), token.Separator, c.Position()), false, nil
 }
