@@ -1,5 +1,7 @@
 package token
 
+import "unicode"
+
 // Kind represents the token kind.
 type Kind string
 
@@ -47,3 +49,23 @@ var (
 		"}",
 	}
 )
+
+// IsIdentifier checks whether str is a valid identifier:
+//   - Must not start with digit;
+//   - Must not contain any special symbols except _;
+//   - Must contain whitespaces;
+//   - The length must be not longer than 255 or empty.
+func IsIdentifier(str string) bool {
+	if len(str) == 0 || len(str) > 255 {
+		return false
+	}
+	for idx, r := range str {
+		if idx == 0 && unicode.IsDigit(r) {
+			return false
+		}
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' {
+			return false
+		}
+	}
+	return true
+}
