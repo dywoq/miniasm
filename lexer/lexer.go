@@ -88,7 +88,7 @@ func newBase(r io.Reader) (*Lexer, error) {
 	l.bytes = bytes
 	l.mu = sync.Mutex{}
 	l.on.Store(false)
-	l.position = &token.Position{}
+	l.position = &token.Position{1, 1, 0}
 	return l, nil
 }
 
