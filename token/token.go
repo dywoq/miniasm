@@ -47,7 +47,6 @@ type Token struct {
 const (
 	Identifier Kind = "identifier"
 	Number     Kind = "number"
-	Float      Kind = "float"
 	String     Kind = "string"
 	Char       Kind = "char"
 	Separator  Kind = "separator"

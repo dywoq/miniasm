@@ -3,14 +3,19 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
+
 
 	"github.com/dywoq/miniasm/lexer"
 	"github.com/dywoq/miniasm/lexer/tokenizer"
 )
 
 func main() {	
-	l, err := lexer.NewDebug(strings.NewReader("sdsd_623"), os.Stdout)
+	f, err := os.Open("main.miniasm")
+	if err != nil {
+		panic(err)
+	}
+	
+	l, err := lexer.NewDebug(f, os.Stdout)
 	if err != nil {
 		panic(err)
 	}
@@ -18,12 +23,12 @@ func main() {
 	d := tokenizer.Default{}
 	d.Append(l)
 	
-	tokens, err := l.Do("something.miniasm")
+	tokens, err := l.Do(f.Name())
 	if err != nil {
 		panic(err)
 	}
 	
 	for _, tok := range tokens {
-		fmt.Printf("tok.Literal: %v\n", tok.Literal)
+		fmt.Printf("%v %v\n", tok.Literal, tok.Kind)
 	}
 }

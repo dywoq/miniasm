@@ -27,11 +27,12 @@ type Default struct {
 // Append appends all tokenizers into a.
 func (d *Default) Append(a Appender) {
 	a.AppendTokenizer(d.Identifier)
+	a.AppendTokenizer(d.Number)
 }
 
 func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
 	c.DebugPrintln("Identifier(): Met a possible identifier")
-	
+
 	cur := c.Current()
 	if cur == 0 || !unicode.IsLetter(rune(cur)) && cur != '_' {
 		c.DebugPrintln("Identifier(): No match")
@@ -40,31 +41,55 @@ func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
 
 	start := c.Position().Position
 	for {
-		c.DebugPrintln("Identifier(): Advancing")
 		cur := c.Current()
 		if cur == 0 || (!unicode.IsLetter(rune(cur)) && cur != '_' && !unicode.IsDigit(rune(cur))) {
-			c.DebugPrintln("Identifier(): Stopped advancing")
 			break
 		}
 		c.Advance()
 	}
-	
-	c.DebugPrintln("Identifier(): Slicing")
+
 	end := c.Position().Position
 	str, err := c.Slice(start, end)
 	if err != nil {
 		return nil, false, err
 	}
 	c.DebugPrintf("Identifier(): Got %v\n", str)
-	
+
 	if !token.IsIdentifier(str) {
-		c.DebugPrintf("Identifier(): %v is not identifier, moving backwards\n", str)
+		c.DebugPrintf("Identifier(): %v is not identifier\n", str)
 		for range end - start {
 			c.Backward()
 		}
 		return nil, true, err
 	}
-	
-	c.DebugPrintf("Identifier(): %v is identifier, returning token\n", str)
+
+	c.DebugPrintf("Identifier(): %v is identifier\n", str)
 	return token.New(str, token.Identifier, c.Position()), false, nil
+}
+
+func (d *Default) Number(c Context) (*token.Token, bool, error) {
+	c.DebugPrintln("Number(): Met a possible number")
+
+	cur := c.Current()
+	if cur == 0 || !unicode.IsDigit(rune(cur)) {
+		c.DebugPrintln("Number(): No match")
+		return nil, true, nil
+	}
+	
+	start := c.Position().Position
+	for {
+		cur := c.Current()
+		if cur == 0 || !unicode.IsDigit(rune(cur)) {
+			break
+		}
+		c.Advance()
+	}
+	end := c.Position().Position
+	
+	str, err := c.Slice(start, end)
+	if err != nil {
+		return nil, false, err
+	}
+	c.DebugPrintf("Number(): %v is number\n", str)
+	return token.New(str, token.Number, c.Position()), false, nil
 }
