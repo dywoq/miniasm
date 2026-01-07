@@ -156,8 +156,12 @@ func (c *context) Eof() bool {
 	return c.l.position.Position >= len(c.l.bytes)
 }
 
+func (c *context) Sof() bool {
+	return c.l.position.Position <= 0
+}
+
 func (c *context) Current() byte {
-	if c.Eof() {
+	if c.Eof() || c.Sof() {
 		return 0
 	}
 	return c.l.bytes[c.l.position.Position]
@@ -173,6 +177,29 @@ func (c *context) Advance() {
 		c.l.position.Column = 1
 	} else {
 		c.l.position.Column++
+	}
+}
+
+func (c *context) Backward() {
+	if c.Sof() {
+		return
+	}
+	c.l.position.Position--
+	cur := c.Current()
+	if cur == '\n' {
+		c.l.position.Line--
+		col := 1
+		for i := c.l.position.Position - 1; i >= 0; i-- {
+			if c.l.bytes[i] == '\n' {
+				break
+			}
+			col++
+		}
+		c.l.position.Column = col
+	} else {
+		if c.l.position.Column > 1 {
+			c.l.position.Column--
+		}
 	}
 }
 
@@ -211,8 +238,8 @@ func (c *context) DebugPrintln(a ...any) {
 }
 
 // Do starts lexer and runs tokenizers, printing debug messages
-// if debug mode is on. 
-// 
+// if debug mode is on.
+//
 // Does nothing if there are no set tokenizers.
 //
 // Returns an error if tokenizer failed to transform

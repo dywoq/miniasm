@@ -22,11 +22,11 @@ type Debugging interface {
 	// DebugPrintf writes a debug formatted message.
 	// It doesn't do anything if debug mode is false.
 	DebugPrintf(format string, a ...any)
-	
+
 	// DebugPrintf writes a debug message without newline.
 	// It doesn't do anything if debug mode is false.
 	DebugPrint(a ...any)
-	
+
 	// DebugPrintln writes a debug message with newline.
 	// It doesn't do anything if debug mode is false.
 	DebugPrintln(a ...any)
@@ -35,11 +35,18 @@ type Debugging interface {
 type Context interface {
 	// Eof checks if lexer encountered end of file.
 	Eof() bool
+	
+	// Sof checks if lexer encountered start of file.
+	Sof() bool
 
 	// Advance advances to the next position in the file.
 	// Updates line if it encountered new line (\n).
 	// Notice that it doesn't advance when lexer encounters end of file.
 	Advance()
+
+	// Backwards advances to the next position backwards.
+	// It doesn't do anything if it encountered start of file.
+	Backward()
 
 	// Current returns the current processing byte of the file.
 	// Returns 0 if lexer encountered end of file.
@@ -54,7 +61,7 @@ type Context interface {
 
 	// Position returns the current position in the file.
 	Position() *token.Position
-	
+
 	Debugging
 }
 
@@ -65,3 +72,8 @@ type Context interface {
 // Returns true if input doesn't match the requirements of tokenizer,
 // and lexer tries to use other tokenizer.
 type Tokenizer func(c Context) (*token.Token, bool, error)
+
+// Appender defines an interface for appending tokenizers.
+type Appender interface {
+	AppendTokenizer(t Tokenizer)
+}
