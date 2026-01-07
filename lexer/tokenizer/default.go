@@ -1,0 +1,70 @@
+// Copyright 2026 dywoq
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package tokenizer
+
+import (
+	"unicode"
+
+	"github.com/dywoq/miniasm/token"
+)
+
+// Default contains default MiniAsm tokenizers.
+type Default struct {
+}
+
+// Append appends all tokenizers into a.
+func (d *Default) Append(a Appender) {
+	a.AppendTokenizer(d.Identifier)
+}
+
+func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
+	c.DebugPrintln("Identifier(): Met a possible identifier")
+	
+	cur := c.Current()
+	if cur == 0 || !unicode.IsLetter(rune(cur)) && cur != '_' {
+		c.DebugPrintln("Identifier(): No match")
+		return nil, true, nil
+	}
+
+	start := c.Position().Position
+	for {
+		c.DebugPrintln("Identifier(): Advancing")
+		cur := c.Current()
+		if cur == 0 || (!unicode.IsLetter(rune(cur)) && cur != '_' && !unicode.IsDigit(rune(cur))) {
+			c.DebugPrintln("Identifier(): Stopped advancing")
+			break
+		}
+		c.Advance()
+	}
+	
+	c.DebugPrintln("Identifier(): Slicing")
+	end := c.Position().Position
+	str, err := c.Slice(start, end)
+	if err != nil {
+		return nil, false, err
+	}
+	c.DebugPrintf("Identifier(): Got %v\n", str)
+	
+	if !token.IsIdentifier(str) {
+		c.DebugPrintf("Identifier(): %v is not identifier, moving backwards\n", str)
+		for range end - start {
+			c.Backward()
+		}
+		return nil, true, err
+	}
+	
+	c.DebugPrintf("Identifier(): %v is identifier, returning token\n", str)
+	return token.New(str, token.Identifier, c.Position()), false, nil
+}

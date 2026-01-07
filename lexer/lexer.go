@@ -153,40 +153,52 @@ type context struct {
 }
 
 func (c *context) Eof() bool {
+	c.DebugPrintln("Eof(): Checking EOF (end of file)")
 	return c.l.position.Position >= len(c.l.bytes)
 }
 
 func (c *context) Sof() bool {
+	c.DebugPrintln("Sof(): Checking SOF (start of file)")
 	return c.l.position.Position <= 0
 }
 
 func (c *context) Current() byte {
-	if c.Eof() || c.Sof() {
+	c.DebugPrintln("Current(): Getting current character")
+	if c.Eof() {
 		return 0
 	}
 	return c.l.bytes[c.l.position.Position]
 }
 
 func (c *context) Advance() {
+	c.DebugPrintln("Advance(): Advancing...")
 	if c.Eof() {
+		c.DebugPrintln("Advance(): Eof() is true, skipping")
 		return
 	}
+	c.DebugPrintln("Advance(): Position++")
 	c.l.position.Position++
 	if cur := c.Current(); cur != 0 && cur == '\n' {
+		c.DebugPrintln("Advance(): Met newline, increasing Line and resetting column to 1")
 		c.l.position.Line++
 		c.l.position.Column = 1
 	} else {
+		c.DebugPrintln("Advance(): Increasing Column")
 		c.l.position.Column++
 	}
 }
 
 func (c *context) Backward() {
+	c.DebugPrintln("Backward(): Advancing backwards...")
 	if c.Sof() {
+		c.DebugPrintln("Backward(): Sof() is true, skipping")
 		return
 	}
+	c.DebugPrintln("Backward(): Position--")
 	c.l.position.Position--
 	cur := c.Current()
 	if cur == '\n' {
+		c.DebugPrintln("Backward(): Met newline, decreasing Line and detecting column")
 		c.l.position.Line--
 		col := 1
 		for i := c.l.position.Position - 1; i >= 0; i-- {
@@ -195,27 +207,36 @@ func (c *context) Backward() {
 			}
 			col++
 		}
+		c.DebugPrintln("Backward(): Detected column")
 		c.l.position.Column = col
 	} else {
 		if c.l.position.Column > 1 {
+			c.DebugPrintln("Backward(): Column--")
 			c.l.position.Column--
 		}
 	}
 }
 
 func (c *context) Slice(start, end int) (string, error) {
+	c.DebugPrintln("Slice(): Slicing...")
 	switch {
 	case start > end:
+		c.DebugPrintln("Slice(): Failed slicing")
 		return "", c.l.makeError(fmt.Sprintf("Start %v is higher than end %v", start, end))
 	case start < 0:
+		c.DebugPrintln("Slice(): Failed slicing")
 		return "", c.l.makeError(fmt.Sprintf("Start %v is negative", start))
 	case end > len(c.l.bytes):
+		c.DebugPrintln("Slice(): Failed slicing")
 		return "", c.l.makeError(fmt.Sprintf("End %v is out of bounds", end))
 	}
+
+	c.DebugPrintf("Slice(): Returning: [%v:%v]\n", start, end)
 	return string(c.l.bytes[start:end]), nil
 }
 
 func (c *context) Position() *token.Position {
+	c.DebugPrintf("Position(): Returning current position")
 	return c.l.position
 }
 

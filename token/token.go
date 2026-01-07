@@ -71,7 +71,7 @@ func New(lit string, kind Kind, pos *Position) *Token {
 // IsIdentifier checks whether str is a valid identifier:
 //   - Must not start with digit;
 //   - Must not contain any special symbols except _;
-//   - Must contain whitespaces;
+//   - Must not contain whitespaces;
 //   - The length must be not longer than 255 or empty.
 func IsIdentifier(str string) bool {
 	if len(str) == 0 || len(str) > 255 {
