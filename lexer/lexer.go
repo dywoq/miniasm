@@ -210,6 +210,13 @@ func (c *context) DebugPrintln(a ...any) {
 	}
 }
 
+// Do starts lexer and runs tokenizers, printing debug messages
+// if debug mode is on. 
+// 
+// Does nothing if there are no set tokenizers.
+//
+// Returns an error if tokenizer failed to transform
+// input into a token.
 func (l *Lexer) Do(filename string) ([]*token.Token, error) {
 	c := &context{l}
 
