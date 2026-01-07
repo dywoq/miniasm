@@ -35,7 +35,7 @@ type Debugging interface {
 type Context interface {
 	// Eof checks if lexer encountered end of file.
 	Eof() bool
-	
+
 	// Sof checks if lexer encountered start of file.
 	Sof() bool
 
