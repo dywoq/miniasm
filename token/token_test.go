@@ -25,14 +25,17 @@ func TestIsIdentifier(t *testing.T) {
 		input string
 		want  bool
 	}{
+		// Valid
 		{"__foo", true},
 		{"foo_123", true},
 		{"___", true},
+		// Invalid
 		{"##", false},
 		{"1234", false},
 	}
 
 	// to prevent a lot of x and save readability, we append this test case manually.
+	// these are invalid.
 	str := []byte{}
 	for range 256 {
 		str = append(str, 'x')
@@ -41,6 +44,26 @@ func TestIsIdentifier(t *testing.T) {
 		input string
 		want  bool
 	}{string(str), false})
+
+	// same to types and separators, invalid.
+	for _, sep := range token.Separators {
+		tests = append(tests, struct {
+			input string
+			want  bool
+		}{
+			sep,
+			false,
+		})
+	}
+	for _, t := range token.Types {
+		tests = append(tests, struct {
+			input string
+			want  bool
+		}{
+			t,
+			false,
+		})
+	}
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {

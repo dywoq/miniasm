@@ -14,7 +14,10 @@
 
 package token
 
-import "unicode"
+import (
+	"slices"
+	"unicode"
+)
 
 // Kind represents the token kind.
 type Kind string
@@ -50,6 +53,7 @@ const (
 	String     Kind = "string"
 	Char       Kind = "char"
 	Separator  Kind = "separator"
+	Type       Kind = "type"
 )
 
 var (
@@ -63,6 +67,13 @@ var (
 		"(",
 		")",
 	}
+
+	Types = Slice{
+		"num",
+		"char",
+		"str",
+		"array",
+	}
 )
 
 func New(lit string, kind Kind, pos *Position) *Token {
@@ -73,11 +84,17 @@ func New(lit string, kind Kind, pos *Position) *Token {
 //   - Must not start with digit;
 //   - Must not contain any special symbols except _;
 //   - Must not contain whitespaces;
-//   - The length must be not longer than 255 or empty.
+//   - The length must be not longer than 255 or empty;
+//   - Must not be reserved word or separator;
 func IsIdentifier(str string) bool {
 	if len(str) == 0 || len(str) > 255 {
 		return false
 	}
+
+	if slices.Contains(Separators, str) || slices.Contains(Types, str) {
+		return false
+	}
+
 	for idx, r := range str {
 		if idx == 0 && unicode.IsDigit(r) {
 			return false

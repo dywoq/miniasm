@@ -32,6 +32,7 @@ func (d *Default) Append(a Appender) {
 	a.AppendTokenizer(d.Separator)
 	a.AppendTokenizer(d.String)
 	a.AppendTokenizer(d.Char)
+	a.AppendTokenizer(d.Type)
 }
 
 func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
@@ -105,7 +106,7 @@ func (d *Default) Separator(c Context) (*token.Token, bool, error) {
 		c.DebugPrintln("Separator(): No match")
 		return nil, true, nil
 	}
-	c.DebugPrintf("Separator(): %v is separator\n", cur)
+	c.DebugPrintf("Separator(): %v is separator\n", string(cur))
 	c.Advance()
 	return token.New(string(cur), token.Separator, c.Position()), false, nil
 }
@@ -167,4 +168,42 @@ func (d *Default) Char(c Context) (*token.Token, bool, error) {
 	c.Advance()
 
 	return token.New(string(char), token.Char, c.Position()), false, nil
+}
+
+func (d *Default) Type(c Context) (*token.Token, bool, error) {
+	c.DebugPrintln("Type(): Met a possible type")
+	cur := c.Current()
+	if cur == 0 || !unicode.IsLetter(rune(cur)) {
+		c.DebugPrintln("Type(): No match")
+		return nil, true, nil
+	}
+
+	start := c.Position().Position
+	for {
+		c.Advance()
+		cur := c.Current()
+		if c.Eof() || !unicode.IsLetter(rune(cur)) {
+			break
+		}
+	}
+	end := c.Position().Position
+
+	str, err := c.Slice(start, end)
+	if err != nil {
+		return nil, false, err
+	}
+
+	c.DebugPrintf("Type(): Got %v\n", str)
+
+	if !slices.Contains(token.Types, str) {
+		c.DebugPrintf("Type(): %v is not type \n", str)
+		for range end - start {
+			c.Backward()
+		}
+		return nil, true, nil
+	}
+
+	c.DebugPrintf("Type(): %v is a type\n", str)
+
+	return token.New(str, token.Type, c.Position()), false, nil
 }
