@@ -2,7 +2,7 @@
 
 `miniasm` is a simple cross-platform Assembly, which lets you write programs in Assembly fast and easy:
 ```miniasm
-main (args []) { 
+main (args) { 
   mov x, 10; 
   mov y, 20; 
   mov result, 0;
