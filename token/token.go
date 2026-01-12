@@ -53,7 +53,6 @@ const (
 	String     Kind = "string"
 	Char       Kind = "char"
 	Separator  Kind = "separator"
-	Type       Kind = "type"
 )
 
 var (
@@ -66,13 +65,6 @@ var (
 		"}",
 		"(",
 		")",
-	}
-
-	Types = Slice{
-		"num",
-		"char",
-		"str",
-		"array",
 	}
 )
 

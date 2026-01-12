@@ -1,4 +1,4 @@
-main (args array str) num { 
+main num (args) { 
   mov x, 10; 
   mov y, 20; 
   mov result, 0;
