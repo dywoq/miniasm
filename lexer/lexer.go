@@ -293,11 +293,15 @@ func (l *Lexer) Do(filename string) ([]*token.Token, error) {
 
 	tokens := []*token.Token{}
 	for !c.Eof() {
+		// We skip whitespace before and after tokenizing to avoid "Unknown character" error,
+		// whose the source is double empty lines.
+		l.skipWhitespace(c)
 		tok, err := l.tokenize(c)
 		if err != nil {
 			return nil, err
 		}
 		tokens = append(tokens, tok)
+		l.skipWhitespace(c)
 	}
 	return tokens, nil
 }
@@ -308,7 +312,6 @@ func (l *Lexer) makeError(err string) error {
 
 func (l *Lexer) tokenize(c *context) (*token.Token, error) {
 	for _, tokenizer := range l.tokenizers {
-		l.skipWhitespace(c)
 		c.DebugPrintln("Trying to tokenize...")
 		tok, noMatch, err := tokenizer(c)
 		if err != nil {
