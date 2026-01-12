@@ -17,7 +17,7 @@ package token_test
 import (
 	"testing"
 
-	"github.com/dywoq/miniasm/token"
+	"github.com/dywoq/miniasm/pkg/token"
 )
 
 func TestIsIdentifier(t *testing.T) {

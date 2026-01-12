@@ -18,7 +18,7 @@ import (
 	"slices"
 	"unicode"
 
-	"github.com/dywoq/miniasm/token"
+	"github.com/dywoq/miniasm/pkg/token"
 )
 
 // Default contains default MiniAsm tokenizers.

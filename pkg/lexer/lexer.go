@@ -22,8 +22,8 @@ import (
 	"sync/atomic"
 	"unicode"
 
-	"github.com/dywoq/miniasm/lexer/tokenizer"
-	"github.com/dywoq/miniasm/token"
+	"github.com/dywoq/miniasm/pkg/lexer/tokenizer"
+	"github.com/dywoq/miniasm/pkg/token"
 )
 
 type Lexer struct {

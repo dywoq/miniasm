@@ -15,7 +15,7 @@
 package tokenizer
 
 import (
-	"github.com/dywoq/miniasm/token"
+	"github.com/dywoq/miniasm/pkg/token"
 )
 
 type Debugging interface {
