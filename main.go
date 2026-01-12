@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dywoq/miniasm/lexer"
-	"github.com/dywoq/miniasm/lexer/tokenizer"
+	"github.com/dywoq/miniasm/pkg/lexer"
+	"github.com/dywoq/miniasm/pkg/lexer/tokenizer"
 )
 
 func main() {
