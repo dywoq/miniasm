@@ -83,7 +83,7 @@ func IsIdentifier(str string) bool {
 		return false
 	}
 
-	if slices.Contains(Separators, str) || slices.Contains(Types, str) {
+	if slices.Contains(Separators, str) {
 		return false
 	}
 

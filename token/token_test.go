@@ -55,15 +55,6 @@ func TestIsIdentifier(t *testing.T) {
 			false,
 		})
 	}
-	for _, t := range token.Types {
-		tests = append(tests, struct {
-			input string
-			want  bool
-		}{
-			t,
-			false,
-		})
-	}
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
