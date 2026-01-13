@@ -1,6 +1,6 @@
 # miniasm
 
-`miniasm` is a simple cross-platform Assembly, which lets you write programs in Assembly fast and easy:
+`miniasm` is a simple, minimal cross-platform Assembly, which lets you write programs in Assembly fast and easy:
 ```miniasm
 main (args) { 
   mov x, 10; 
