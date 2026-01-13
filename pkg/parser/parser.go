@@ -15,12 +15,14 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"sync"
 	"sync/atomic"
 
 	"github.com/dywoq/miniasm/pkg/ast"
+	"github.com/dywoq/miniasm/pkg/parser/mini"
 	"github.com/dywoq/miniasm/pkg/token"
 )
 
@@ -34,6 +36,9 @@ type Parser struct {
 	debugW      io.Writer
 	debugOn     atomic.Bool
 	debugLogger *log.Logger
+
+	// mini parsers
+	minis []mini.Parser
 
 	// mutex
 	mu sync.Mutex
@@ -100,12 +105,79 @@ func (p *Parser) DebugOn() bool {
 	return p.debugOn.Load()
 }
 
+// implements mini.Context
+type context struct {
+	p *Parser
+}
+
+func (c *context) Current() *token.Token {
+	if c.p.pos >= len(c.p.tokens) {
+		return nil
+	}
+	return c.p.tokens[c.p.pos]
+}
+
+func (c *context) Advance() {
+	if c.p.pos >= len(c.p.tokens) {
+		return
+	}
+	c.p.pos++
+}
+
+func (c *context) Position() int {
+	return c.p.pos
+}
+
+func (c *context) NewError(str string, pos *token.Position) error {
+	return c.p.makeError(str, pos)
+}
+
+func (c *context) ExpectLiteral(lit string) (*token.Token, bool) {
+	tok := c.p.tokens[c.p.pos]
+	if tok.Literal != lit {
+		return nil, false
+	}
+	c.Advance()
+	return tok, true
+}
+
+func (c *context) ExpectKind(kind token.Kind) (*token.Token, bool) {
+	tok := c.p.tokens[c.p.pos]
+	if tok.Kind != kind {
+		return nil, false
+	}
+	c.Advance()
+	return tok, true
+}
+
+func (c *context) DebugPrintf(format string, a ...any) {
+	if c.p.DebugOn() {
+		c.p.debugLogger.Printf(format, a...)
+	}
+}
+
+func (c *context) DebugPrint(a ...any) {
+	if c.p.DebugOn() {
+		c.p.debugLogger.Print(a...)
+	}
+}
+
+func (c *context) DebugPrintln(a ...any) {
+	if c.p.DebugOn() {
+		c.p.debugLogger.Println(a...)
+	}
+}
+
+func (p *Parser) makeError(str string, pos *token.Position) error {
+	return fmt.Errorf("%v (%v:%v:%v)", str, p.filename, pos.Line, pos.Column)
+}
+
 func (p *Parser) Do(filename string) (*ast.Tree, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.filename = filename
-
+	
 	p.on.Store(true)
 	defer func() {
 		p.on.Store(false)

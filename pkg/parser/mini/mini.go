@@ -13,9 +13,9 @@ type Context interface {
 
 	Position() int
 
-	NewError(str string) error
+	NewError(str string, pos *token.Position) error
 
-	ExpectStr(str string) (*token.Token, bool)
+	ExpectLiteral(lit string) (*token.Token, bool)
 
 	ExpectKind(kind token.Kind) (*token.Token, bool)
 
