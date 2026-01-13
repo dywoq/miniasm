@@ -173,15 +173,24 @@ func (p *Parser) makeError(str string, pos *token.Position) error {
 }
 
 func (p *Parser) Do(filename string) (*ast.Tree, error) {
+	c := &context{p}
+	
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.filename = filename
 	
+	c.DebugPrintln("Starting parser...")
 	p.on.Store(true)
 	defer func() {
 		p.on.Store(false)
+		c.DebugPrintln("Parser ended")
 	}()
+	
+	if len(p.minis) == 0 {
+		c.DebugPrintln("No mini parsers detected")
+		return nil, nil
+	}
 
 	topLevel := []ast.Node{}
 	return &ast.Tree{
