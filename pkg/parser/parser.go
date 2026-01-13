@@ -20,7 +20,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/dywoq/miniasm/pkg/parser/ast"
+	"github.com/dywoq/miniasm/pkg/ast"
 	"github.com/dywoq/miniasm/pkg/token"
 )
 
