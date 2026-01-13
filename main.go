@@ -6,6 +6,7 @@ import (
 
 	"github.com/dywoq/miniasm/pkg/lexer"
 	"github.com/dywoq/miniasm/pkg/lexer/tokenizer"
+	"github.com/dywoq/miniasm/pkg/parser"
 )
 
 func main() {
@@ -27,7 +28,14 @@ func main() {
 		panic(err)
 	}
 
-	for _, tok := range tokens {
-		fmt.Printf("%v %v\n", tok.Literal, tok.Kind)
+	p := parser.NewDebug(tokens, os.Stdout)
+
+	tree, err := p.Do(f.Name())
+	if err != nil {
+		panic(err)
+	}
+
+	for _, topLevel := range tree.TopLevel {
+		fmt.Printf("%v", topLevel)
 	}
 }

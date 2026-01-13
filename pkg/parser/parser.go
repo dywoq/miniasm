@@ -56,6 +56,7 @@ func NewDebug(tokens []*token.Token, w io.Writer) *Parser {
 	p := newBase(tokens)
 	p.debugW = w
 	p.debugOn.Store(true)
+	p.debugLogger = log.New(p.debugW, "", log.Default().Flags())
 	return p
 }
 
@@ -65,10 +66,10 @@ func newBase(tokens []*token.Token) *Parser {
 	p.pos = 0
 	p.tokens = tokens
 	p.debugOn.Store(false)
+	p.debugW = nil
 	p.mu = sync.Mutex{}
-	p.debugLogger = log.New(p.debugW, "", log.Default().Flags())
 	p.filename = ""
-	return nil
+	return p
 }
 
 func (p *Parser) SetTokens(tokens []*token.Token) {
@@ -89,6 +90,9 @@ func (p *Parser) DebugSetWriter(w io.Writer) {
 		panic("parser is on, can't set debug writer")
 	}
 	p.debugW = w
+	if p.debugLogger == nil {
+		p.debugLogger = log.New(p.debugW, "", log.Default().Flags())
+	}
 }
 
 // DebugSetMode sets a debugging mode to b.
@@ -178,26 +182,56 @@ func (p *Parser) makeError(str string, pos *token.Position) error {
 
 func (p *Parser) Do(filename string) (*ast.Tree, error) {
 	c := &context{p}
-	
+
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.filename = filename
-	
+
 	c.DebugPrintln("Starting parser...")
 	p.on.Store(true)
 	defer func() {
 		p.on.Store(false)
 		c.DebugPrintln("Parser ended")
 	}()
-	
+
 	if len(p.minis) == 0 {
 		c.DebugPrintln("No mini parsers detected")
-		return nil, nil
+		return &ast.Tree{TopLevel: []ast.Node{}}, nil
 	}
 
 	topLevel := []ast.Node{}
+	for !c.IsEnd() {
+		n, err := p.parse(c)
+		if err != nil {
+			return nil, err
+		}
+		topLevel = append(topLevel, n)
+	}
+
 	return &ast.Tree{
 		TopLevel: topLevel,
 	}, nil
+}
+
+func (p *Parser) parse(c *context) (ast.Node, error) {
+	// for getting position
+	tok := p.tokens[p.pos]
+
+	for _, parser := range p.minis {
+		c.DebugPrintln("Trying to parse")
+		got, noMatch, err := parser(c)
+		if err != nil {
+			c.DebugPrintln("Encountered an error when parsing")
+			return nil, err
+		}
+		if noMatch {
+			c.DebugPrintln("No match, trying other mini parser...")
+			continue
+		}
+		c.DebugPrintln("Successfully parsed, returning node")
+		return got, nil
+
+	}
+	return nil, p.makeError("Unknown token", tok.Position)
 }
