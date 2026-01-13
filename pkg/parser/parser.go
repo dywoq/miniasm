@@ -1,0 +1,118 @@
+// Copyright 2026 dywoq
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package parser
+
+import (
+	"io"
+	"log"
+	"sync"
+	"sync/atomic"
+
+	"github.com/dywoq/miniasm/pkg/parser/ast"
+	"github.com/dywoq/miniasm/pkg/token"
+)
+
+type Parser struct {
+	// base
+	tokens []*token.Token
+	pos    int
+	on     atomic.Bool
+
+	// debug
+	debugW      io.Writer
+	debugOn     atomic.Bool
+	debugLogger *log.Logger
+
+	// mutex
+	mu sync.Mutex
+
+	// data
+	filename string
+}
+
+func New(tokens []*token.Token) *Parser {
+	p := newBase(tokens)
+	return p
+}
+
+func NewDebug(tokens []*token.Token, w io.Writer) *Parser {
+	p := newBase(tokens)
+	p.debugW = w
+	p.debugOn.Store(true)
+	return p
+}
+
+func newBase(tokens []*token.Token) *Parser {
+	p := &Parser{}
+	p.on.Store(true)
+	p.pos = 0
+	p.tokens = tokens
+	p.debugOn.Store(false)
+	p.mu = sync.Mutex{}
+	p.debugLogger = log.New(p.debugW, "", log.Default().Flags())
+	p.filename = ""
+	return nil
+}
+
+func (p *Parser) SetTokens(tokens []*token.Token) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.on.Load() {
+		panic("parser is on, can't set tokens")
+	}
+	p.tokens = tokens
+}
+
+// DebugSetWriter sets a new debugging writer.
+// Panics if the parser is currently working.
+func (p *Parser) DebugSetWriter(w io.Writer) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.on.Load() {
+		panic("parser is on, can't set debug writer")
+	}
+	p.debugW = w
+}
+
+// DebugSetMode sets a debugging mode to b.
+// Panics if the parser is currently working.
+func (p *Parser) DebugSetMode(b bool) {
+	if p.on.Load() {
+		panic("parser is on, can't set debug mode")
+	}
+	p.debugOn.Store(b)
+}
+
+// DebugOn returns true if debugging is on.
+func (p *Parser) DebugOn() bool {
+	return p.debugOn.Load()
+}
+
+func (p *Parser) Do(filename string) (*ast.Tree, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.filename = filename
+
+	p.on.Store(true)
+	defer func() {
+		p.on.Store(false)
+	}()
+
+	topLevel := []ast.Node{}
+	return &ast.Tree{
+		TopLevel: topLevel,
+	}, nil
+}
