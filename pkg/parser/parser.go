@@ -110,15 +110,19 @@ type context struct {
 	p *Parser
 }
 
+func (c *context) IsEnd() bool {
+	return c.p.pos >= len(c.p.tokens)
+}
+
 func (c *context) Current() *token.Token {
-	if c.p.pos >= len(c.p.tokens) {
+	if c.IsEnd() {
 		return nil
 	}
 	return c.p.tokens[c.p.pos]
 }
 
 func (c *context) Advance() {
-	if c.p.pos >= len(c.p.tokens) {
+	if c.IsEnd() {
 		return
 	}
 	c.p.pos++
