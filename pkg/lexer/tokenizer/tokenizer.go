@@ -15,22 +15,9 @@
 package tokenizer
 
 import (
+	"github.com/dywoq/miniasm/pkg/debug"
 	"github.com/dywoq/miniasm/pkg/token"
 )
-
-type Debugging interface {
-	// DebugPrintf writes a debug formatted message.
-	// It doesn't do anything if debug mode is false.
-	DebugPrintf(format string, a ...any)
-
-	// DebugPrintf writes a debug message without newline.
-	// It doesn't do anything if debug mode is false.
-	DebugPrint(a ...any)
-
-	// DebugPrintln writes a debug message with newline.
-	// It doesn't do anything if debug mode is false.
-	DebugPrintln(a ...any)
-}
 
 type Context interface {
 	// Eof checks if lexer encountered end of file.
@@ -65,7 +52,7 @@ type Context interface {
 	// NewError creates a new error, which automatically has location of the error.
 	NewError(str string) error
 
-	Debugging
+	debug.Context
 }
 
 // Tokenizer represents function that transforms input
