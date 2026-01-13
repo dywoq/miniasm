@@ -47,3 +47,8 @@ type Context interface {
 //
 // Returns true if token doesn't match mini parser requirements.
 type Parser func(c Context) (ast.Node, bool, error)
+
+// Appended defines an interface for appending mini parsers.
+type Appender interface {
+	AppendParser(p Parser)
+}
