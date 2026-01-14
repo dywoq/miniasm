@@ -1,2 +1,1 @@
-main "Hi!"
-s 20
+main str "Hi!"

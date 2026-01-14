@@ -15,14 +15,15 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
+	// "fmt"
 	"fmt"
 	"os"
 
 	"github.com/dywoq/miniasm/pkg/lexer"
 	"github.com/dywoq/miniasm/pkg/lexer/tokenizer"
-	"github.com/dywoq/miniasm/pkg/parser"
-	"github.com/dywoq/miniasm/pkg/parser/mini"
+	// "github.com/dywoq/miniasm/pkg/parser"
+	// "github.com/dywoq/miniasm/pkg/parser/mini"
 )
 
 func main() {
@@ -43,21 +44,25 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	p := parser.NewDebug(tokens, os.Stdout)
-	pd := mini.Default{}
-	pd.Append(p)
-
-	tree, err := p.Do(f.Name())
-	if err != nil {
-		panic(err)
+	
+	for _, token := range tokens {
+		fmt.Printf("%v - %v\n", token.Literal, token.Kind)
 	}
 
-	for _, topLevel := range tree.TopLevel {
-		json, err := json.MarshalIndent(topLevel, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("json: %v\n", string(json))
-	}
+	// p := parser.NewDebug(tokens, os.Stdout)
+	// pd := mini.Default{}
+	// pd.Append(p)
+
+	// tree, err := p.Do(f.Name())
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// for _, topLevel := range tree.TopLevel {
+	// 	json, err := json.MarshalIndent(topLevel, "", "  ")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	fmt.Printf("json: %v\n", string(json))
+	// }
 }
