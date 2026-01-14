@@ -277,7 +277,7 @@ func (l *Lexer) Do(filename string) ([]*token.Token, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.filename = filename
+	l.reset(filename)
 
 	c.DebugPrintln("Starting lexer...")
 	l.on.Store(true)
@@ -332,4 +332,11 @@ func (l *Lexer) skipWhitespace(c *context) {
 	for cur := c.Current(); cur != 0 && unicode.IsSpace(rune(cur)); cur = c.Current() {
 		c.Advance()
 	}
+}
+
+func (l *Lexer) reset(filename string) {
+	l.filename = filename
+	l.position.Line = 1
+	l.position.Column = 1
+	l.position.Position = 0
 }
