@@ -73,6 +73,7 @@ var (
 		"int",
 		"str",
 		"char",
+		"void",
 		"array",
 	}
 )
