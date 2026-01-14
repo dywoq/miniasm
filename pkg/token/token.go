@@ -53,7 +53,6 @@ const (
 	String     Kind = "string"
 	Char       Kind = "char"
 	Separator  Kind = "separator"
-	Type       Kind = "type"
 )
 
 var (
@@ -67,14 +66,6 @@ var (
 		"(",
 		")",
 		"^",
-	}
-
-	Types = Slice{
-		"int",
-		"str",
-		"char",
-		"void",
-		"array",
 	}
 )
 
@@ -93,7 +84,7 @@ func IsIdentifier(str string) bool {
 		return false
 	}
 
-	if slices.Contains(Separators, str) || slices.Contains(Types, str) {
+	if slices.Contains(Separators, str) {
 		return false
 	}
 
