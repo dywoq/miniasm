@@ -14,6 +14,21 @@
 
 package ast
 
+import "github.com/dywoq/miniasm/pkg/token"
+
 type Node interface {
 	Node()
 }
+
+type TopLevel struct {
+	Identifier string `json:"identifier"`
+	Expression Node   `json:"expression"`
+}
+
+type Value struct {
+	Literal string     `json:"literal"`
+	Kind    token.Kind `json:"kind"`
+}
+
+func (d TopLevel) Node() {}
+func (v Value) Node()    {}

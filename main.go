@@ -15,12 +15,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/dywoq/miniasm/pkg/lexer"
 	"github.com/dywoq/miniasm/pkg/lexer/tokenizer"
 	"github.com/dywoq/miniasm/pkg/parser"
+	"github.com/dywoq/miniasm/pkg/parser/mini"
 )
 
 func main() {
@@ -43,6 +45,8 @@ func main() {
 	}
 
 	p := parser.NewDebug(tokens, os.Stdout)
+	pd := mini.Default{}
+	pd.Append(p)
 
 	tree, err := p.Do(f.Name())
 	if err != nil {
@@ -50,6 +54,10 @@ func main() {
 	}
 
 	for _, topLevel := range tree.TopLevel {
-		fmt.Printf("%v", topLevel)
+		json, err := json.MarshalIndent(topLevel, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("json: %v\n", string(json))
 	}
 }

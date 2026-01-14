@@ -62,7 +62,7 @@ func NewDebug(tokens []*token.Token, w io.Writer) *Parser {
 
 func newBase(tokens []*token.Token) *Parser {
 	p := &Parser{}
-	p.on.Store(true)
+	p.on.Store(false)
 	p.pos = 0
 	p.tokens = tokens
 	p.debugOn.Store(false)
@@ -212,6 +212,15 @@ func (p *Parser) Do(filename string) (*ast.Tree, error) {
 	return &ast.Tree{
 		TopLevel: topLevel,
 	}, nil
+}
+
+func (p *Parser) AppendParser(m mini.Parser) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.on.Load() {
+		panic("parser is on, can't add new mini parsers")
+	}
+	p.minis = append(p.minis, m)
 }
 
 func (p *Parser) parse(c *context) (ast.Node, error) {
