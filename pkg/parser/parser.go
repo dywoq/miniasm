@@ -24,6 +24,7 @@ import (
 	"github.com/dywoq/miniasm/pkg/ast"
 	"github.com/dywoq/miniasm/pkg/parser/mini"
 	"github.com/dywoq/miniasm/pkg/token"
+	"google.golang.org/appengine/file"
 )
 
 type Parser struct {
@@ -186,7 +187,7 @@ func (p *Parser) Do(filename string) (*ast.Tree, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.filename = filename
+	p.reset(filename)
 
 	c.DebugPrintln("Starting parser...")
 	p.on.Store(true)
@@ -243,4 +244,9 @@ func (p *Parser) parse(c *context) (ast.Node, error) {
 
 	}
 	return nil, p.makeError("Unknown token", tok.Position)
+}
+
+func (p *Parser) reset(filename string) {
+	p.pos = 0 
+	p.filename = filename
 }
