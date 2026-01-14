@@ -24,7 +24,6 @@ import (
 	"github.com/dywoq/miniasm/pkg/ast"
 	"github.com/dywoq/miniasm/pkg/parser/mini"
 	"github.com/dywoq/miniasm/pkg/token"
-	"google.golang.org/appengine/file"
 )
 
 type Parser struct {
