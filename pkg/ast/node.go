@@ -60,6 +60,11 @@ type IndexAccess struct {
 	Index      int  `json:"index"`
 }
 
+type SpecialFunction struct {
+	Name string `json:"name"`
+	Args []Node `json:"args"`
+}
+
 func (TopLevel) Node()              {}
 func (Value) Node()                 {}
 func (Function) Node()              {}
@@ -68,3 +73,4 @@ func (Instruction) Node()           {}
 func (ReferenceToIdentifier) Node() {}
 func (Array) Node()                 {}
 func (IndexAccess) Node()           {}
+func (SpecialFunction) Node()       {}

@@ -1,1 +1,3 @@
-at
+main (args^) {
+    mov x, at(at(x, 20), 10);
+}

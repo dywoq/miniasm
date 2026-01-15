@@ -36,6 +36,8 @@ func (d *Default) Expression(c Context) (ast.Node, error) {
 		return d.Value(c)
 	case token.Identifier:
 		return d.ReferenceToIdentifier(c)
+	case token.SpecialFunction:
+		return d.SpecialFunction(c)
 	}
 
 	switch tok.Literal {
@@ -255,4 +257,44 @@ func (d *Default) Array(c Context) (ast.Node, error) {
 	}
 
 	return ast.Array{Elements: elements, Fixed: fixed, FixedSize: fixedSize}, nil
+}
+
+func (d *Default) SpecialFunction(c Context) (ast.Node, error) {
+	name, ok := c.ExpectKind(token.SpecialFunction)
+	if !ok {
+		return nil, c.NewError("Expected special function name", c.Current().Position)
+	}
+	
+	_, ok = c.ExpectLiteral("(")
+	if !ok {
+		return nil, c.NewError("Expected opening '(' after special function name", c.Current().Position)
+	}
+	
+	args := []ast.Node{}
+	for {
+		cur := c.Current()
+		if cur.Literal == ")" {
+			c.Advance()
+			break
+		}
+		
+		expr, err := d.Expression(c)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, expr)
+
+		cur = c.Current()
+		if cur.Literal == "," {
+			c.Advance()
+			continue
+		} else if cur.Literal == ")" {
+			c.Advance()
+			break
+		} else {
+			return nil, c.NewError("Expected ',' or ';' after special function argument\n", c.Current().Position)
+		}
+	}
+
+	return ast.SpecialFunction{Name: name.Literal, Args: args}, nil
 }
