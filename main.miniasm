@@ -1,3 +1,6 @@
-x (args^) {
-    mov x, 20;
+main (args^) {
+    mov hello, [`H`, `E`, `L`, `L`, `O`];
+    print "{}", hello;
+    mov ret, 0;
 }
+ 

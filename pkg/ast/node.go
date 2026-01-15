@@ -49,9 +49,22 @@ type Instruction struct {
 	Args []Node `json:"args"`
 }
 
+type Array struct {
+	Elements  []Node `json:"elements"`
+	Fixed     bool   `json:"fixed"`
+	FixedSize int    `json:"fixed_size"`
+}
+
+type IndexAccess struct {
+	Expression Node `json:"expression"`
+	Index      int  `json:"index"`
+}
+
 func (TopLevel) Node()              {}
 func (Value) Node()                 {}
 func (Function) Node()              {}
 func (FunctionArgument) Node()      {}
 func (Instruction) Node()           {}
 func (ReferenceToIdentifier) Node() {}
+func (Array) Node()                 {}
+func (IndexAccess) Node()           {}

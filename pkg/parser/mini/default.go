@@ -1,6 +1,9 @@
 package mini
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/dywoq/miniasm/pkg/ast"
 	"github.com/dywoq/miniasm/pkg/token"
 )
@@ -35,11 +38,14 @@ func (d *Default) Expression(c Context) (ast.Node, error) {
 		return d.ReferenceToIdentifier(c)
 	}
 
-	// Although there's only one literal we check in switch case,
-	// more literals are planned to add as the language grows
 	switch tok.Literal {
 	case "(":
 		return d.Function(c)
+	}
+
+	// Special case: Array
+	if tok.Literal == "[" {
+		return d.Array(c)
 	}
 
 	return nil, c.NewError("Unknown token", tok.Position)
@@ -71,91 +77,90 @@ func (d *Default) Value(c Context) (ast.Node, error) {
 }
 
 func (d *Default) Function(c Context) (ast.Node, error) {
-    args, err := d.FunctionArgs(c)
-    if err != nil {
-        return nil, err
-    }
-    body, err := d.FunctionBody(c)
-    if err != nil {
-        return nil, err
-    }
-    return &ast.Function{
-        Args: args,
-        Body: body,
-    }, nil
+	args, err := d.FunctionArgs(c)
+	if err != nil {
+		return nil, err
+	}
+	body, err := d.FunctionBody(c)
+	if err != nil {
+		return nil, err
+	}
+	return &ast.Function{
+		Args: args,
+		Body: body,
+	}, nil
 }
 
 func (d *Default) FunctionBody(c Context) ([]ast.Instruction, error) {
-    _, ok := c.ExpectLiteral("{")
-    if !ok {
-        return nil, c.NewError("Expected { when parsing function body", c.Current().Position)
-    }
+	_, ok := c.ExpectLiteral("{")
+	if !ok {
+		return nil, c.NewError("Expected { when parsing function body", c.Current().Position)
+	}
 
-    instructions := []ast.Instruction{}
-    for !c.IsEnd() {
-        cur := c.Current()
-        if cur.Literal == "}" {
-            c.Advance()
-            break
-        }
+	instructions := []ast.Instruction{}
+	for !c.IsEnd() {
+		cur := c.Current()
+		if cur.Literal == "}" {
+			c.Advance()
+			break
+		}
 
-        instrNode, err := d.Instruction(c)
-        if err != nil {
-            return nil, err
-        }
+		instrNode, err := d.Instruction(c)
+		if err != nil {
+			return nil, err
+		}
 
-        instr, ok := instrNode.(ast.Instruction)
-        if !ok {
-            return nil, c.NewError("Expected instruction", cur.Position)
-        }
+		instr, ok := instrNode.(ast.Instruction)
+		if !ok {
+			return nil, c.NewError("Expected instruction", cur.Position)
+		}
 
-        instructions = append(instructions, instr)
-    }
+		instructions = append(instructions, instr)
+	}
 
-    return instructions, nil
+	return instructions, nil
 }
 
-
 func (d *Default) FunctionArgs(c Context) ([]ast.FunctionArgument, error) {
-    _, ok := c.ExpectLiteral("(")
-    if !ok {
-        return nil, c.NewError("Expected '(' when parsing function arguments", c.Current().Position)
-    }
+	_, ok := c.ExpectLiteral("(")
+	if !ok {
+		return nil, c.NewError("Expected '(' when parsing function arguments", c.Current().Position)
+	}
 
-    args := []ast.FunctionArgument{}
-    for {
-        cur := c.Current()
-        if cur.Literal == ")" {
-            c.Advance()
-            break
-        }
+	args := []ast.FunctionArgument{}
+	for {
+		cur := c.Current()
+		if cur.Literal == ")" {
+			c.Advance()
+			break
+		}
 
-        name, ok := c.ExpectKind(token.Identifier)
-        if !ok {
-            return nil, c.NewError("Expected identifier when parsing function arguments", c.Current().Position)
-        }
+		name, ok := c.ExpectKind(token.Identifier)
+		if !ok {
+			return nil, c.NewError("Expected identifier when parsing function arguments", c.Current().Position)
+		}
 
-        variadic := false
-        if c.Current().Literal == "^" {
-            variadic = true
-            c.Advance()
-        }
+		variadic := false
+		if c.Current().Literal == "^" {
+			variadic = true
+			c.Advance()
+		}
 
-        args = append(args, ast.FunctionArgument{Name: name.Literal, Variadic: variadic})
+		args = append(args, ast.FunctionArgument{Name: name.Literal, Variadic: variadic})
 
-        cur = c.Current()
-        if cur.Literal == "," {
-            c.Advance()
-            continue
-        } else if cur.Literal == ")" {
-            c.Advance()
-            break
-        } else {
-            return nil, c.NewError("Expected ',' or ')' after argument", c.Current().Position)
-        }
-    }
+		cur = c.Current()
+		if cur.Literal == "," {
+			c.Advance()
+			continue
+		} else if cur.Literal == ")" {
+			c.Advance()
+			break
+		} else {
+			return nil, c.NewError("Expected ',' or ')' after argument", c.Current().Position)
+		}
+	}
 
-    return args, nil
+	return args, nil
 }
 
 func (d *Default) ReferenceToIdentifier(c Context) (ast.Node, error) {
@@ -169,37 +174,85 @@ func (d *Default) ReferenceToIdentifier(c Context) (ast.Node, error) {
 }
 
 func (d *Default) Instruction(c Context) (ast.Node, error) {
-    name, ok := c.ExpectKind(token.Identifier)
-    if !ok {
-        return nil, c.NewError("Expected name of the instruction", c.Current().Position)
-    }
+	name, ok := c.ExpectKind(token.Identifier)
+	if !ok {
+		return nil, c.NewError("Expected name of the instruction", c.Current().Position)
+	}
 
-    args := []ast.Node{}
-    for {
-        cur := c.Current()
-        if cur.Literal == ";" {
-            c.Advance()
-            break
-        }
+	args := []ast.Node{}
+	for {
+		cur := c.Current()
+		if cur.Literal == ";" {
+			c.Advance()
+			break
+		}
 
-        expr, err := d.Expression(c)
-        if err != nil {
-            return nil, err
-        }
-        args = append(args, expr)
+		expr, err := d.Expression(c)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, expr)
 
-        cur = c.Current()
-        if cur.Literal == "," {
-            c.Advance()
-            continue
-        } else if cur.Literal == ";" {
-            c.Advance()
-            break
-        } else {
-            return nil, c.NewError("Expected ',' or ';' after instruction argument", cur.Position)
-        }
-    }
+		cur = c.Current()
+		if cur.Literal == "," {
+			c.Advance()
+			continue
+		} else if cur.Literal == ";" {
+			c.Advance()
+			break
+		} else {
+			return nil, c.NewError("Expected ',' or ';' after instruction argument", cur.Position)
+		}
+	}
 
-    return ast.Instruction{Name: name.Literal, Args: args}, nil
+	return ast.Instruction{Name: name.Literal, Args: args}, nil
 }
 
+func (d *Default) Array(c Context) (ast.Node, error) {
+	_, ok := c.ExpectLiteral("[")
+	if !ok {
+		return nil, c.NewError("Expected '[' in the start of array", c.Current().Position)
+	}
+
+	elements := []ast.Node{}
+	for {
+		cur := c.Current()
+		if cur.Literal == "]" {
+			c.Advance()
+			break
+		}
+
+		expr, err := d.Expression(c)
+		if err != nil {
+			return nil, err
+		}
+		elements = append(elements, expr)
+
+		cur = c.Current()
+		if cur.Literal == "]" {
+			c.Advance()
+			break
+		} else if cur.Literal == "," {
+			c.Advance()
+			continue
+		} else {
+			return nil, c.NewError("Expected ']' or ',' after array element", c.Current().Position)
+		}
+	}
+
+	// Check for declaration of fixed size
+	fixed := false
+	fixedSize := 0
+	cur := c.Current()
+	if cur.Kind == token.Number {
+		fixed = true
+		num, err := strconv.Atoi(cur.Literal)
+		if err != nil {
+			return nil, c.NewError(fmt.Sprintf("Failed to convert literal into number: %v", err), cur.Position)
+		}
+		fixedSize = num
+		c.Advance()
+	}
+
+	return ast.Array{Elements: elements, Fixed: fixed, FixedSize: fixedSize}, nil
+}
