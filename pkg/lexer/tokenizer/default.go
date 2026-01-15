@@ -32,6 +32,7 @@ func (d *Default) Append(a Appender) {
 	a.AppendTokenizer(d.Separator)
 	a.AppendTokenizer(d.String)
 	a.AppendTokenizer(d.Char)
+	a.AppendTokenizer(d.SpecialFunction)
 }
 
 func (d *Default) Identifier(c Context) (*token.Token, bool, error) {
@@ -167,4 +168,39 @@ func (d *Default) Char(c Context) (*token.Token, bool, error) {
 	c.Advance()
 
 	return token.New(string(char), token.Char, c.Position()), false, nil
+}
+
+func (d *Default) SpecialFunction(c Context) (*token.Token, bool, error) {
+	c.DebugPrintln("SpecialFunction(): Met a possible special function")
+	cur := c.Current()
+	if cur == 0 || !unicode.IsLetter(rune(cur)) {
+		c.DebugPrintln("SpecialFunction(): No match")
+		return nil, true, nil
+	}
+
+	start := c.Position().Position
+	for {
+		cur := c.Current()
+		if c.Eof() || !unicode.IsLetter(rune(cur)) {
+			break
+		}
+		c.Advance()
+	}
+	end := c.Position().Position
+
+	str, err := c.Slice(start, end)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if !slices.Contains(token.SpecialFunctions, str) {
+		for range end - start {
+			c.Backward()
+		}
+		c.DebugPrintf("SpecialFunction(): %v is not special function\n", str)
+		return nil, true, nil
+	}
+
+	c.DebugPrintf("SpecialFunction(): %v is special function\n", str)
+	return token.New(str, token.SpecialFunction, c.Position()), false, nil
 }

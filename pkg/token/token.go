@@ -48,11 +48,12 @@ type Token struct {
 }
 
 const (
-	Identifier Kind = "identifier"
-	Number     Kind = "number"
-	String     Kind = "string"
-	Char       Kind = "char"
-	Separator  Kind = "separator"
+	Identifier      Kind = "identifier"
+	Number          Kind = "number"
+	String          Kind = "string"
+	Char            Kind = "char"
+	Separator       Kind = "separator"
+	SpecialFunction Kind = "special-function"
 )
 
 var (
@@ -66,6 +67,10 @@ var (
 		"(",
 		")",
 		"^",
+	}
+
+	SpecialFunctions = Slice{
+		"at",
 	}
 )
 
@@ -84,7 +89,7 @@ func IsIdentifier(str string) bool {
 		return false
 	}
 
-	if slices.Contains(Separators, str) {
+	if slices.Contains(Separators, str) || slices.Contains(SpecialFunctions, str) {
 		return false
 	}
 

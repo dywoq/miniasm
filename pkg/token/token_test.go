@@ -55,6 +55,15 @@ func TestIsIdentifier(t *testing.T) {
 			false,
 		})
 	}
+	for _, special := range token.SpecialFunctions {
+		tests = append(tests, struct {
+			input string
+			want  bool
+		}{
+			special,
+			false,
+		})
+	}
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
