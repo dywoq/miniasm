@@ -30,5 +30,28 @@ type Value struct {
 	Kind    token.Kind `json:"kind"`
 }
 
-func (d TopLevel) Node() {}
-func (v Value) Node()    {}
+type ReferenceToIdentifier struct {
+	Identifier string `json:"identifier"`
+}
+
+type Function struct {
+	Args []FunctionArgument `json:"args"`
+	Body []Instruction      `json:"body"`
+}
+
+type FunctionArgument struct {
+	Name     string `json:"name"`
+	Variadic bool   `json:"variadic"`
+}
+
+type Instruction struct {
+	Name string `json:"name"`
+	Args []Node `json:"args"`
+}
+
+func (TopLevel) Node()              {}
+func (Value) Node()                 {}
+func (Function) Node()              {}
+func (FunctionArgument) Node()      {}
+func (Instruction) Node()           {}
+func (ReferenceToIdentifier) Node() {}

@@ -1,1 +1,3 @@
-main str "Hi!"
+x (args^) {
+    mov x, 20;
+}
