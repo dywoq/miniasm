@@ -295,6 +295,7 @@ func (l *Lexer) Do(filename string) ([]*token.Token, error) {
 	for !c.Eof() {
 		// We skip whitespace before and after tokenizing to avoid "Unknown character" error,
 		// whose the source is double empty lines.
+		l.skipComments(c)
 		l.skipWhitespace(c)
 		tok, err := l.tokenize(c)
 		if err != nil {
@@ -302,6 +303,7 @@ func (l *Lexer) Do(filename string) ([]*token.Token, error) {
 		}
 		tokens = append(tokens, tok)
 		l.skipWhitespace(c)
+		l.skipComments(c)
 	}
 	return tokens, nil
 }
@@ -331,6 +333,28 @@ func (l *Lexer) tokenize(c *context) (*token.Token, error) {
 func (l *Lexer) skipWhitespace(c *context) {
 	for cur := c.Current(); cur != 0 && unicode.IsSpace(rune(cur)); cur = c.Current() {
 		c.Advance()
+	}
+}
+
+func (l *Lexer) skipComments(c *context) {
+	for {
+		cur := c.Current()
+		if cur != '#' {
+			return
+		}
+
+		for cur != 0 && cur != '\n' {
+			c.Advance()
+			cur = c.Current()
+		}
+
+		if cur == '\n' {
+			c.Advance()
+		}
+
+		if c.Eof() || c.Current() != '#' {
+			return
+		}
 	}
 }
 
