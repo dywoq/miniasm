@@ -264,12 +264,12 @@ func (d *Default) SpecialFunction(c Context) (ast.Node, error) {
 	if !ok {
 		return nil, c.NewError("Expected special function name", c.Current().Position)
 	}
-	
+
 	_, ok = c.ExpectLiteral("(")
 	if !ok {
 		return nil, c.NewError("Expected opening '(' after special function name", c.Current().Position)
 	}
-	
+
 	args := []ast.Node{}
 	for {
 		cur := c.Current()
@@ -277,7 +277,7 @@ func (d *Default) SpecialFunction(c Context) (ast.Node, error) {
 			c.Advance()
 			break
 		}
-		
+
 		expr, err := d.Expression(c)
 		if err != nil {
 			return nil, err

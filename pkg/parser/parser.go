@@ -246,6 +246,6 @@ func (p *Parser) parse(c *context) (ast.Node, error) {
 }
 
 func (p *Parser) reset(filename string) {
-	p.pos = 0 
+	p.pos = 0
 	p.filename = filename
 }

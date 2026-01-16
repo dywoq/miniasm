@@ -43,7 +43,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	for _, token := range tokens {
 		fmt.Printf("%v - %v\n", token.Literal, token.Kind)
 	}
